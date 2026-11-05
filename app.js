@@ -13,92 +13,49 @@ button.addEventListener("click", processVideo);
 
 async function processVideo() {
 
-const file = input.files[0];
+    const file = input.files[0];
 
-if (!file) {
-alert("Selecciona un video");
-return;
-}
+    if (!file) {
+        alert("Selecciona un video");
+        return;
+    }
 
-button.disabled = true;
+    // límite recomendado
+    const maxSize = 300 * 1024 * 1024;
 
-try {
+    if (file.size > maxSize) {
+        alert(
+            "El video supera los 300 MB. FFmpeg.wasm puede quedarse sin memoria en un Chromebook."
+        );
+        return;
+    }
 
-status.innerText = "Cargando FFmpeg...";
-if (!ffmpeg.loaded) {
+    button.disabled = true;
 
-  const baseURL =
-    "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd";
+    try {
 
-  await ffmpeg.load({
-    coreURL: `${baseURL}/ffmpeg-core.js`,
-    wasmURL: `${baseURL}/ffmpeg-core.wasm`
-  });
-}
+        status.innerText = "Cargando FFmpeg...";
 
-status.innerText = "Subiendo archivo...";
+        if (!ffmpeg.loaded) {
 
-await ffmpeg.writeFile(
-"input.mp4",
-await fetchFile(file)
-);
+            const baseURL =
+                "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd";
 
-status.innerText = "Aplicando reducción de ruido...";
+            await ffmpeg.load({
+                coreURL: `${baseURL}/ffmpeg-core.js`,
+                wasmURL: `${baseURL}/ffmpeg-core.wasm`
+            });
 
-/*
-afftdn = reducción de ruido
-highpass = elimina ruido grave
-lowpass = mejora voz
-compand = mejora inteligibilidad
-*/
+        }
 
-await ffmpeg.exec([
-"-i",
-"input.mp4",
+        status.innerText = "Subiendo video...";
 
-"-af",
-"afftdn=nf=-30,highpass=f=80,lowpass=f=9000,compand",
+        await ffmpeg.writeFile(
+            "input.mp4",
+            await fetchFile(file)
+        );
 
-"-c:v",
-"copy",
+        status.innerText = "Reduciendo ruido...";
 
-"-c:a",
-"aac",
-
-"output.mp4"
-]);
-
-status.innerText = "Generando resultado...";
-
-const data =
-await ffmpeg.readFile("output.mp4");
-
-const blob = new Blob(
-[data.buffer],
-{ type: "video/mp4" }
-);
-
-const url =
-URL.createObjectURL(blob);
-
-preview.src = url;
-
-downloadLink.href = url;
-downloadLink.download = "video_limpio.mp4";
-downloadLink.textContent =
-"⬇ Descargar video limpio";
-
-status.innerText =
-"✅ Video procesado";
-
-} catch(error){
-
-console.error(error);
-
-status.innerText =
-"Error procesando video";
-
-}
-
-button.disabled = false;
-}
+        await ffmpeg.exec([
+      
