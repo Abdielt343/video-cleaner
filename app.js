@@ -12,20 +12,10 @@ const ffmpeg = new FFmpeg();
 button.addEventListener("click", processVideo);
 
 async function processVideo() {
-
     const file = input.files[0];
 
     if (!file) {
-        alert("Selecciona un video.");
-        return;
-    }
-
-    const maxSize = 300 * 1024 * 1024;
-
-    if (file.size > maxSize) {
-        alert(
-            "El archivo supera 300 MB. FFmpeg.wasm puede quedarse sin memoria en Chromebook."
-        );
+        alert("Selecciona un video");
         return;
     }
 
@@ -38,7 +28,7 @@ async function processVideo() {
         if (!ffmpeg.loaded) {
 
             const baseURL =
-              "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd";
+                "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd";
 
             await ffmpeg.load({
                 coreURL: `${baseURL}/ffmpeg-core.js`,
@@ -58,30 +48,21 @@ async function processVideo() {
         await ffmpeg.exec([
             "-i",
             "input.mp4",
-
             "-af",
             "afftdn=nf=-30,highpass=f=80,lowpass=f=9000,compand",
-
             "-c:v",
             "copy",
-
             "-c:a",
             "aac",
-
             "output.mp4"
         ]);
 
-        status.innerText = "Generando resultado...";
-
-        const data = await ffmpeg.readFile(
-            "output.mp4"
-        );
+        const data =
+            await ffmpeg.readFile("output.mp4");
 
         const blob = new Blob(
             [data.buffer],
-            {
-                type:"video/mp4"
-            }
+            { type: "video/mp4" }
         );
 
         const url =
@@ -90,23 +71,19 @@ async function processVideo() {
         preview.src = url;
 
         downloadLink.href = url;
-
-        downloadLink.download =
-            "video_limpio.mp4";
-
+        downloadLink.download = "video_limpio.mp4";
         downloadLink.textContent =
             "⬇ Descargar video limpio";
 
         status.innerText =
             "✅ Video procesado";
 
-    } catch(error){
+    } catch (error) {
 
         console.error(error);
 
         status.innerText =
             "❌ Error procesando video";
-
     }
 
     button.disabled = false;
