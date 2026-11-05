@@ -25,9 +25,15 @@ button.disabled = true;
 try {
 
 status.innerText = "Cargando FFmpeg...";
-
 if (!ffmpeg.loaded) {
-await ffmpeg.load();
+
+  const baseURL =
+    "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd";
+
+  await ffmpeg.load({
+    coreURL: `${baseURL}/ffmpeg-core.js`,
+    wasmURL: `${baseURL}/ffmpeg-core.wasm`
+  });
 }
 
 status.innerText = "Subiendo archivo...";
